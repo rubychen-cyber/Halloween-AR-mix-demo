@@ -468,7 +468,8 @@
   <!-- 主頁集點卡 -->
   <div class="container">
     <header>
-      <h1>🎃 麗喆雙語中小學的「萬聖節雙語 AR 謎題」 👻</h1>
+      <h1>🎃 麗喆雙語中小學的
+        「萬聖節雙語 AR 謎題」 👻</h1>
       <p>讓孩子跟家長在校園隨興漫步時，一掃 QR Code 就能輕鬆討論、隨興參加！</p>
     </header>
 
@@ -594,96 +595,104 @@
       { 
         id: 'spot_1', 
         type: 'ar', 
-        name: '南瓜怪', 
+        name: '捕捉南瓜燈', 
         icon: '🎃',
-        title: '【第 1 關】千年南瓜怪現身！', 
-        hint: '滑動南瓜球丟向南瓜怪完成收服！',
-        successMsg: '🎉 太神了！成功收服千年南瓜怪，獲得第 1 個萬聖印章！'
+        title: 'It’s dark today. Please swipe to catch Jack-o-Lantern to light up Ritz.', 
+        hint: '今天麗喆到處都暗暗的，請先滑動捕捉南瓜燈，點亮周遭環境。',
+        successMsg: '🎉 You did it. Ritz Academy is shining bright!
+          你做到啦！麗喆現在都亮起來了！'
       },
       
       // --- 關卡 2：抓寶 2 ---
       { 
         id: 'spot_2', 
         type: 'ar', 
-        name: '淘氣幽靈', 
+        name: '趕走辦公室幽靈', 
         icon: '👻',
-        title: '【第 2 關】出沒在角落的淘氣幽靈', 
-        hint: '快速向上劃動南瓜球將幽靈抓起來！',
-        successMsg: '👻 淘氣幽靈被你抓到了！第 2 個印章順利到手！'
+        title: 'Oh no! There’s a phantom in ESL Office. Please swipe to catch it.', 
+        hint: '外語處辦公室出現了幽靈，請滑動並抓住它！',
+        successMsg: '👻 You did it. Now the bad phantom is in your pocket.
+          你做到啦！現在壞幽靈已經在你的口袋裡囉！'
       },
       
       // --- 關卡 3：調色 1（目標：橘色 - 紅+黃）---
       { 
         id: 'spot_3', 
         type: 'color', 
-        name: '橘色藥水', 
+        name: '聰明藥水', 
         icon: '🧪', 
-        title: '【第 3 關】女巫的橘色秘方', 
-        hint: '點擊紅與黃顏料，調出傳說中的萬聖橘！', 
+        title: 'The exam is coming. The best witch Lily wants us to make the “smart potion.', 
+        hint: '考試快要到啦！最厲害的女巫Lily說，大家根據顏色，調配「聰明藥水」吧！', 
         target: { r: 255, g: 128, b: 0 },
-        successMsg: '🧪 魔法藥水調配成功！你獲得了女巫認可的第 3 個印章！'
+        successMsg: '🎓 The potion looks good. You’ll be smart after drinking it!
+          這藥水看起來很棒。喝下去，你就會變聰明喔！'
       },
       
       // --- 關卡 4：調色 2（目標：紫色 - 紅+藍）---
       { 
         id: 'spot_4', 
         type: 'color', 
-        name: '紫色火焰', 
+        name: '寵物龍的紫火焰', 
         icon: '🔥', 
-        title: '【第 4 關】調配幽靈紫火焰', 
-        hint: '點擊紅與藍顏料，調出神秘的紫色魔火！', 
+        title: 'Your pet dragon wants to breathe purple fire. Can you help it blend two different colors of flames together?', 
+        hint: '你有一隻寵物龍，他想要吐出紫色的火焰，你可以幫他融合兩種顏色的火焰嗎？', 
         target: { r: 128, g: 0, b: 128 },
-        successMsg: '🔥 紫色魔法火焰成功燃起！順利獲得第 4 個印章！'
+        successMsg: '🔥 This is the best purple fire in the world,” your dragon says.
+          你的寵物龍說：「這真是世界上最美的紫色火焰了！'
       },
       
       // --- 關卡 5：記憶翻牌 1（3對卡片）---
       { 
         id: 'spot_5', 
         type: 'memory', 
-        name: '記憶卡 A', 
+        name: '恐怖現形', 
         icon: '🃏', 
-        title: '【第 5 關】萬聖怪物卡片對對碰', 
-        hint: '找出 3 組相同的萬聖怪物卡片！', 
+        title: 'Three creatures are hidden in darkness. Please pair to show themselves!', 
+        hint: '黑暗中有三隻恐怖的怪物，請你用配對魔法來讓他們現形吧！', 
         icons: ['🎃', '👻', '🦇'],
-        successMsg: '🧠 驚人的記憶力！全數配對成功，獲得第 5 個印章！'
+        successMsg: '🧠 You are a great hunter. You got pumpkin, phantom and bat.
+         你真是厲害的獵人，抓到了南瓜怪、幽靈和蝙蝠耶！ '
       },
       
       // --- 關卡 6：記憶翻牌 2（3對卡片）---
       { 
         id: 'spot_6', 
         type: 'memory', 
-        name: '記憶卡 B', 
+        name: '偷玩牌的黑貓', 
         icon: '🔮', 
-        title: '【第 6 關】魔法道具翻翻樂', 
-        hint: '憑記憶翻出相同的魔法道具卡片！', 
+        title: 'A sneaky black cat keeps playing with the matching cards when we’re not looking! Let’s finish ASAP!', 
+        hint: '有隻黑貓會趁我們不注意，偷玩配對卡。我們趕快完成，不要讓黑貓搶先了！', 
         icons: ['💀', '🕷️', '🍬'],
-        successMsg: '🔮 魔法道具順利收齊！蓋下第 6 個萬聖印章！'
+        successMsg: '🔮 You are faster than the black cat. Super cool!
+          你竟然比黑貓還快，超級酷！'
       },
       
       // --- 關卡 7：萬聖謎題 1 ---
       { 
         id: 'spot_7', 
         type: 'quiz', 
-        name: '萬聖急轉彎', 
+        name: '萬聖巨星', 
         icon: '🧩', 
-        title: '【第 7 關】萬聖節智力考驗', 
-        question: '請問「不給糖就搗蛋」的英文怎麼說？', 
-        options: ['Happy Halloween', 'Trick or Treat', 'Pumpkin Power'], 
+        title: 'I am a small animal. I can fly at night. I like to hang upside down. What am I?', 
+        question: '我是一隻小動物。我會在晚上飛，而且喜歡倒掛著睡覺。我是誰？', 
+        options: ['(A) Bird (小鳥)', '(B) Bat (蝙蝠)', '(C) Butterfly (蝴蝶)'], 
         answer: 1,
-        successMsg: '💡 恭喜答對！英文難不倒你，順利拿到第 7 個印章！'
+        successMsg: '💡 You get it right! The bats have left Ritz Academy.
+          你答對囉！蝙蝠已經飛走了，不敢留在麗喆了。'
       },
       
       // --- 關卡 8：萬聖謎題 2 ---
       { 
         id: 'spot_8', 
         type: 'quiz', 
-        name: '南瓜密碼', 
+        name: '吃我吃我', 
         icon: '🔐', 
-        title: '【第 8 關】傑克南瓜燈的秘密', 
-        question: '傳說中萬聖節刻著鬼臉的傑克燈籠，最早是用哪種蔬菜刻成的？', 
-        options: ['馬鈴薯', '蕪菁 (大頭菜)', '胡蘿蔔'], 
+        title: 'I am sweet. Children collect me in bags on Halloween night. What am I?', 
+        question: '我是甜甜的食物。萬聖節晚上小朋友會用袋子把我裝回家。我是什麼？', 
+        options: ['(A) Pizza (披薩)', '(B) Candy (糖果)', '(C) Hamburger (漢堡)'], 
         answer: 1,
-        successMsg: '🎓 博學多聞！破解萬聖節知識謎題，集滿最後的第 8 個印章囉！'
+        successMsg: '🍬Don’t eat too much and remember to brush your teeth!
+          記得不要吃太多糖果，晚上也要多刷牙喔！'
       }
     ];
 
