@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>萬聖節闖關大冒險</title>
+
+  <!-- 載入 HTML5 QR Code 掃瞄器 -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    :root {
+      --primary-color: #ff7518;
+      --secondary-color: #4b0082;
+      --bg-color: #1a1a2e;
+      --card-bg: #16213e;
+      --text-color: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      color: var(--primary-color);
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px rgba(255, 117, 24, 0.5);
+    }
+
+    .stamp-card {
+      background: var(--card-bg);
+      border: 3px solid var(--primary-color);
+      border-radius: 15px;
+      padding: 20px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      margin-bottom: 25px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .stamp-slot {
+      aspect-ratio: 1;
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed #555;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .stamp-slot.collected {
+      border-style: solid;
+      border-color: var(--primary-color);
+      background: rgba(255, 117, 24, 0.15);
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .stamp-slot .monster-name {
+      font-size: 0.65rem;
+      color: #aaa;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #ff7518, #e65c00);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 117, 24, 0.4);
+      transition: transform 0.2s, background 0.2s;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 15px;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-verify {
+      background: linear-gradient(135deg, #8a2be2, var(--secondary-color));
+      box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+      display: none;
+    }
+
+    .btn-reset {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+      display: none;
+    }
+
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #reader-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 70px;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 350px;
+      background: #000;
+      min-height: 250px;
+    }
+
+    .overlay-header {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 105;
+    }
+
+    .close-btn {
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .game-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: #111827;
+      overflow: hidden;
+    }
+
+    #ar-stage {
+      background: transparent;
+    }
+
+    #ar-video-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .ar-monster-layer {
+      position: absolute;
+      top: 32%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 102;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: floatMonster 2.5s ease-in-out infinite;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .monster-avatar {
+      font-size: 8rem;
+      filter: drop-shadow(0 0 25px rgba(255, 117, 24, 0.9));
+      line-height: 1;
+    }
+
+    .monster-aura {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,117,24,0.5) 0%, rgba(138,43,226,0.2) 60%, rgba(0,0,0,0) 100%);
+      border-radius: 50%;
+      z-index: -1;
+      animation: pulseAura 2s infinite alternate;
+    }
+
+    .ar-ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 103;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      padding-bottom: 40px;
+    }
+
+    .game-info-box {
+      margin-top: 80px;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 12px 24px;
+      border-radius: 25px;
+      border: 1.5px solid var(--primary-color);
+      text-align: center;
+      backdrop-filter: blur(8px);
+      max-width: 90%;
+    }
+
+    .ball-container {
+      pointer-events: auto;
+      cursor: grab;
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      touch-action: none;
+    }
+
+    .pumpkin-ball {
+      font-size: 5rem;
+      filter: drop-shadow(0 0 15px rgba(255,117,24,0.9));
+      will-change: transform;
+    }
+
+    .monster-captured {
+      transform: translate(-50%, -50%) scale(0) rotate(360deg) !important;
+      opacity: 0;
+    }
+
+    .color-game-panel {
+      padding-top: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      gap: 20px;
+    }
+
+    .color-display-box {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .color-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 15px rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-shadow: 0 0 5px #000;
+    }
+
+    .color-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .color-btn {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .memory-game-panel {
+      padding-top: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      width: 85%;
+      max-width: 340px;
+      margin-top: 20px;
+    }
+
+    .card {
+      aspect-ratio: 1;
+      background: var(--card-bg);
+      border: 2px solid var(--primary-color);
+      border-radius: 12px;
+      font-size: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.4s;
+    }
+
+    .card.flipped {
+      background: #2a2a40;
+      border-color: #8a2be2;
+    }
+
+    .quiz-game-panel {
+      padding-top: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .quiz-question {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 25px;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid var(--primary-color);
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .quiz-option-btn {
+      background: #1f2937;
+      color: white;
+      border: 1px solid #4b5563;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+    }
+
+    .quiz-option-btn:active {
+      background: var(--primary-color);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 2px solid var(--primary-color);
+      border-radius: 20px;
+      padding: 25px;
+      width: 85%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(255, 117, 24, 0.3);
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #0f172a;
+      color: #fff;
+      font-size: 1.2rem;
+      text-align: center;
+      letter-spacing: 5px;
+    }
+
+    .file-input-label {
+      background: rgba(255, 117, 24, 0.2);
+      border: 1px dashed var(--primary-color);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin-top: 15px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    @keyframes floatMonster {
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, -65%); }
+    }
+
+    @keyframes pulseAura {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      100% { transform: scale(1.2); opacity: 0.9; }
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 主頁集點卡 -->
+  <div class="container">
+    <header>
+      <h1>🎃 萬聖狂歡闖關大冒險 👻</h1>
+      <p>挑戰 8 大萬聖節特色關卡收集印章！</p>
+    </header>
+
+    <div class="stamp-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>我的集點卡</h3>
+        <span id="progress-text" style="color: var(--primary-color); font-weight: bold;">0 / 8</span>
+      </div>
+      <div class="grid" id="stamp-grid"></div>
+    </div>
+
+    <button class="btn" id="start-btn" onclick="openScanner()">開啟關卡掃瞄器 🔍</button>
+    <button class="btn btn-verify" id="verify-btn" onclick="openVerifyModal()">出示換領小禮物 🎁</button>
+    <button class="btn btn-reset" id="reset-btn" onclick="confirmResetGame()">再玩一次 ↺</button>
+  </div>
+
+  <!-- 全螢幕關卡 Overlay -->
+  <div class="fullscreen-overlay" id="game-overlay">
+    <div class="overlay-header">
+      <span style="font-weight: bold; background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 15px;">
+        <span id="overlay-title">掃描地點 QR Code</span>
+      </span>
+      <button class="close-btn" onclick="closeOverlay()">✕</button>
+    </div>
+
+    <!-- 掃描與相機容器 -->
+    <div id="reader-container">
+      <div id="reader"></div>
+      
+      <label class="file-input-label">
+        📷 相機沒反應？點此拍照/選擇照片
+        <input type="file" id="qr-file-input" accept="image/*" capture="environment" style="display:none;" onchange="scanFromFile(this)">
+      </label>
+    </div>
+
+    <!-- 1. AR 抓寶 -->
+    <div class="game-stage" id="ar-stage">
+      <video id="ar-video-feed" autoplay playsinline muted></video>
+      <div class="ar-monster-layer" id="ar-monster-layer">
+        <div class="monster-aura"></div>
+        <div class="monster-avatar" id="monster-avatar">👻</div>
+      </div>
+      <div class="ar-ui-layer">
+        <div class="game-info-box">
+          <p style="font-size: 1.1rem; font-weight: bold;" id="ar-title-text">野生怪物現身中...</p>
+          <p style="font-size: 0.85rem; color: #ddd; margin-top: 4px;" id="ar-hint-text">按住南瓜球「快速向上劃」拋出收服！</p>
+        </div>
+        <div class="ball-container" id="ball-container">
+          <div class="pumpkin-ball" id="pumpkin-ball">🎃</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 調色 -->
+    <div class="game-stage" id="color-stage">
+      <div class="color-game-panel">
+        <div class="game-info-box">
+          <p style="font-size: 1.1rem; font-weight: bold;" id="color-title-text">女巫調色調製中...</p>
+          <p style="font-size: 0.85rem; color: #ddd; margin-top: 4px;" id="color-hint-text">點擊下方顏料，調出與目標相同的顏料！</p>
+        </div>
+
+        <div class="color-display-box">
+          <div>
+            <div class="color-circle" id="target-color-circle">目標</div>
+            <p style="font-size: 0.75rem; text-align: center; margin-top: 5px; color:#aaa;">目標顏色</p>
+          </div>
+          <span style="font-size: 1.5rem;">➔</span>
+          <div>
+            <div class="color-circle" id="current-color-circle" style="background-color: rgb(0,0,0);">你的藥水</div>
+            <p style="font-size: 0.75rem; text-align: center; margin-top: 5px; color:#aaa;">目前顏色</p>
+          </div>
+        </div>
+
+        <div class="color-buttons">
+          <button class="color-btn" style="background: #ff0000;" onclick="mixColor('red')">🔴</button>
+          <button class="color-btn" style="background: #0000ff;" onclick="mixColor('blue')">🔵</button>
+          <button class="color-btn" style="background: #ffff00;" onclick="mixColor('yellow')">🟡</button>
+        </div>
+
+        <button class="btn" style="width: 140px; padding: 8px; font-size: 0.9rem; background: #555;" onclick="resetColor()">重設藥水 ↺</button>
+      </div>
+    </div>
+
+    <!-- 3. 翻翻樂 -->
+    <div class="game-stage" id="memory-stage">
+      <div class="memory-game-panel">
+        <div class="game-info-box">
+          <p style="font-size: 1.1rem; font-weight: bold;" id="memory-title-text">萬聖對對碰 🃏</p>
+          <p style="font-size: 0.85rem; color: #ddd; margin-top: 4px;" id="memory-hint-text">翻開兩張相同圖案的卡片進行配對！</p>
+        </div>
+
+        <div class="memory-grid" id="memory-grid"></div>
+      </div>
+    </div>
+
+    <!-- 4. 謎題 -->
+    <div class="game-stage" id="quiz-stage">
+      <div class="quiz-game-panel">
+        <div class="game-info-box" style="margin-bottom: 20px;">
+          <p style="font-size: 1.1rem; font-weight: bold;" id="quiz-title-text">萬聖節智力考驗</p>
+        </div>
+
+        <div class="quiz-question" id="quiz-question-text">謎題載入中...</div>
+        <div class="quiz-options" id="quiz-options-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🎉 自訂通關成功 Modal (替換原生 alert，解決手機阻塞不回主頁的問題) -->
+  <div class="modal" id="success-modal">
+    <div class="modal-content">
+      <div style="font-size: 3.5rem; margin-bottom: 10px;" id="success-icon">🎉</div>
+      <h3 style="color: var(--primary-color); margin-bottom: 10px;" id="success-title">挑戰成功！</h3>
+      <p style="font-size: 0.95rem; line-height: 1.6; color: #ddd; white-space: pre-line; margin-bottom: 20px;" id="success-msg">獲得 1 個萬聖節印章！</p>
+      <button class="btn" style="width: 100%; margin-bottom: 0;" onclick="closeSuccessModalAndReturn()">太棒了！領取印章 ➔</button>
+    </div>
+  </div>
+
+  <!-- 工作人員核銷 Modal -->
+  <div class="modal" id="verify-modal">
+    <div class="modal-content">
+      <h3>🎁 兌換萬聖小禮物</h3>
+      <p style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">請交由服務台工作人員操作</p>
+      <input type="password" id="passcode" maxlength="4" placeholder="輸入核銷碼">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" style="width: 50%; background: #555;" onclick="closeVerifyModal()">取消</button>
+        <button class="btn" style="width: 50%;" onclick="confirmRedeem()">確認核銷</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MONSTERS = [
+      { 
+        id: 'spot_1', 
+        type: 'ar', 
+        name: '南瓜怪', 
+        icon: '🎃',
+        title: '【第 1 關】千年南瓜怪現身！', 
+        hint: '滑動南瓜球丟向南瓜怪完成收服！',
+        successMsg: '🎉 太神了！成功收服千年南瓜怪！\n獲得第 1 個萬聖印章！'
+      },
+      { 
+        id: 'spot_2', 
+        type: 'ar', 
+        name: '淘氣幽靈', 
+        icon: '👻',
+        title: '【第 2 關】出沒在角落的淘氣幽靈', 
+        hint: '快速向上劃動南瓜球將幽靈抓起來！',
+        successMsg: '👻 淘氣幽靈被你抓到了！\n第 2 個印章順利到手！'
+      },
+      { 
+        id: 'spot_3', 
+        type: 'color', 
+        name: '橘色藥水', 
+        icon: '🧪', 
+        title: '【第 3 關】女巫的橘色秘方', 
+        hint: '點擊紅與黃顏料，調出傳說中的萬聖橘！', 
+        target: { r: 255, g: 128, b: 0 },
+        successMsg: '🧪 魔法藥水調配成功！\n獲得女巫認可的第 3 個印章！'
+      },
+      { 
+        id: 'spot_4', 
+        type: 'color', 
+        name: '紫色火焰', 
+        icon: '🔥', 
+        title: '【第 4 關】調配幽靈紫火焰', 
+        hint: '點擊紅與藍顏料，調出神秘的紫色魔火！', 
+        target: { r: 128, g: 0, b: 128 },
+        successMsg: '🔥 紫色魔法火焰成功燃起！\n順利獲得第 4 個印章！'
+      },
+      { 
+        id: 'spot_5', 
+        type: 'memory', 
+        name: '記憶卡 A', 
+        icon: '🃏', 
+        title: '【第 5 關】萬聖怪物卡片對對碰', 
+        hint: '找出 3 組相同的萬聖怪物卡片！', 
+        icons: ['🎃', '👻', '🦇'],
+        successMsg: '🧠 驚人的記憶力！\n全數配對成功，獲得第 5 個印章！'
+      },
+      { 
+        id: 'spot_6', 
+        type: 'memory', 
+        name: '記憶卡 B', 
+        icon: '🔮', 
+        title: '【第 6 關】魔法道具翻翻樂', 
+        hint: '憑記憶翻出相同的魔法道具卡片！', 
+        icons: ['💀', '🕷️', '🍬'],
+        successMsg: '🔮 魔法道具順利收齊！\n蓋下第 6 個萬聖印章！'
+      },
+      { 
+        id: 'spot_7', 
+        type: 'quiz', 
+        name: '萬聖急轉彎', 
+        icon: '🧩', 
+        title: '【第 7 關】萬聖節智力考驗', 
+        question: '請問「不給糖就搗蛋」的英文怎麼說？', 
+        options: ['Happy Halloween', 'Trick or Treat', 'Pumpkin Power'], 
+        answer: 1,
+        successMsg: '💡 恭喜答對！\n英文難不倒你，順利拿到第 7 個印章！'
+      },
+      { 
+        id: 'spot_8', 
+        type: 'quiz', 
+        name: '南瓜密碼', 
+        icon: '🔐', 
+        title: '【第 8 關】傑克南瓜燈的秘密', 
+        question: '傳說中萬聖節刻著鬼臉的傑克燈籠，最早是用哪種蔬菜刻成的？', 
+        options: ['馬鈴薯', '蕪菁 (大頭菜)', '胡蘿蔔'], 
+        answer: 1,
+        successMsg: '🎓 博學多聞！破解萬聖節知識謎題，\n集滿最後的第 8 個印章囉！'
+      }
+    ];
+
+    const STAFF_PASSCODE = "1031";
+
+    let collectedSet = new Set(JSON.parse(localStorage.getItem('halloween_stamps') || '[]'));
+    let isRedeemed = localStorage.getItem('halloween_redeemed') === 'true';
+    let html5QrcodeScanner = null;
+    let currentTargetMonster = null;
+    let cameraStream = null;
+
+    function init() {
+      renderStamps();
+      updateProgress();
+      setupBallPhysics();
+    }
+
+    function renderStamps() {
+      const grid = document.getElementById('stamp-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      MONSTERS.forEach((m, index) => {
+        const isCollected = collectedSet.has(m.id);
+        const slot = document.createElement('div');
+        slot.className = `stamp-slot ${isCollected ? 'collected' : ''}`;
+        slot.innerHTML = `
+          <span>${isCollected ? m.icon : '❓'}</span>
+          <span class="monster-name">${isCollected ? m.name : `關卡 ${index + 1}`}</span>
+        `;
+        grid.appendChild(slot);
+      });
+    }
+
+    function updateProgress() {
+      const count = collectedSet.size;
+      const progText = document.getElementById('progress-text');
+      if (progText) progText.innerText = `${count} / ${MONSTERS.length}`;
+
+      const startBtn = document.getElementById('start-btn');
+      const verifyBtn = document.getElementById('verify-btn');
+      const resetBtn = document.getElementById('reset-btn');
+
+      if (isRedeemed) {
+        if (startBtn) startBtn.style.display = 'none';
+        if (verifyBtn) verifyBtn.style.display = 'none';
+        if (resetBtn) resetBtn.style.display = 'block';
+      } else if (count >= MONSTERS.length) {
+        if (startBtn) startBtn.style.display = 'none';
+        if (verifyBtn) verifyBtn.style.display = 'block';
+        if (resetBtn) resetBtn.style.display = 'none';
+      } else {
+        if (startBtn) startBtn.style.display = 'block';
+        if (verifyBtn) verifyBtn.style.display = 'none';
+        if (resetBtn) resetBtn.style.display = 'none';
+      }
+    }
+
+    function openScanner() {
+      document.getElementById('game-overlay').style.display = 'flex';
+      document.getElementById('reader-container').style.display = 'flex';
+      hideAllStages();
+      document.getElementById('overlay-title').innerText = '掃描地點 QR Code';
+
+      if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5Qrcode("reader");
+      }
+
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        onScanSuccess,
+        onScanFailure
+      ).catch(err => {
+        console.warn("鏡頭開啟受限或失敗:", err);
+      });
+    }
+
+    function scanFromFile(input) {
+      if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        if (!html5QrcodeScanner) {
+          html5QrcodeScanner = new Html5Qrcode("reader");
+        }
+        html5QrcodeScanner.scanFile(file, true)
+          .then(decodedText => onScanSuccess(decodedText))
+          .catch(err => alert("無法讀取到有效的關卡 QR Code，請試試拍照更清楚的照片！"));
+      }
+    }
+
+    function hideAllStages() {
+      document.querySelectorAll('.game-stage').forEach(stage => stage.style.display = 'none');
+    }
+
+    function onScanSuccess(decodedText) {
+      if (!decodedText) return;
+      
+      const cleanText = String(decodedText).trim().toLowerCase();
+
+      let foundMonster = MONSTERS.find(m => {
+        const mId = m.id.toLowerCase();
+        const mName = m.name.toLowerCase();
+        return cleanText.includes(mId) || cleanText === mId || cleanText.includes(mName);
+      });
+
+      if (!foundMonster) {
+        const matchNum = cleanText.match(/[1-8]/);
+        if (matchNum) {
+          const num = matchNum[0];
+          foundMonster = MONSTERS.find(m => m.id === `spot_${num}`);
+        }
+      }
+
+      if (!foundMonster) {
+        alert(`掃描內容：\n「${decodedText}」\n這不是活動關卡的 QR Code 哦！`);
+        return;
+      }
+
+      if (collectedSet.has(foundMonster.id)) {
+        alert(`你已經完成過【${foundMonster.name}】囉！`);
+        return;
+      }
+
+      const launchGame = () => {
+        currentTargetMonster = foundMonster;
+        document.getElementById('reader-container').style.display = 'none';
+        
+        if (foundMonster.type === 'ar') startARGame();
+        else if (foundMonster.type === 'color') startColorGame();
+        else if (foundMonster.type === 'memory') startMemoryGame();
+        else if (foundMonster.type === 'quiz') startQuizGame();
+      };
+
+      if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(launchGame).catch(launchGame);
+      } else {
+        launchGame();
+      }
+    }
+
+    function onScanFailure(error) {}
+
+    // 🎉 通關處理：紀錄資料並彈出自訂 Modal
+    function completeCurrentStage() {
+      if (!currentTargetMonster) return;
+
+      collectedSet.add(currentTargetMonster.id);
+      localStorage.setItem('halloween_stamps', JSON.stringify([...collectedSet]));
+
+      document.getElementById('success-icon').innerText = currentTargetMonster.icon || '🎉';
+      document.getElementById('success-title').innerText = `挑戰成功！`;
+      document.getElementById('success-msg').innerText = currentTargetMonster.successMsg || `恭喜通過【${currentTargetMonster.name}】！`;
+      document.getElementById('success-modal').style.display = 'flex';
+    }
+
+    // 關閉 Modal 並滑順返回主頁
+    function closeSuccessModalAndReturn() {
+      document.getElementById('success-modal').style.display = 'none';
+      stopARCamera();
+      closeOverlay();
+      renderStamps();
+      updateProgress();
+    }
+
+    /* ================= 1. AR 抓寶遊戲 ================= */
+    let isBallThrowing = false;
+
+    async function startARGame() {
+      hideAllStages();
+      document.getElementById('ar-stage').style.display = 'block';
+      document.getElementById('overlay-title').innerText = currentTargetMonster.name;
+      
+      document.getElementById('ar-title-text').innerText = currentTargetMonster.title || `【${currentTargetMonster.name}】現身了！`;
+      document.getElementById('ar-hint-text').innerText = currentTargetMonster.hint || '按住南瓜球「快速向上劃」拋出收服！';
+      document.getElementById('monster-avatar').innerText = currentTargetMonster.icon;
+
+      const monsterLayer = document.getElementById('ar-monster-layer');
+      monsterLayer.classList.remove('monster-captured');
+      resetPumpkinBall();
+
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          document.getElementById('ar-video-feed').srcObject = cameraStream;
+        } catch (err) {
+          console.error("AR 相機啟動失敗:", err);
+        }
+      }
+    }
+
+    let startY = 0, startX = 0, startTime = 0, isDragging = false;
+
+    function setupBallPhysics() {
+      const ballContainer = document.getElementById('ball-container');
+      if (!ballContainer) return;
+      ballContainer.addEventListener('touchstart', handleStart, { passive: false });
+      window.addEventListener('touchmove', handleMove, { passive: false });
+      window.addEventListener('touchend', handleEnd, { passive: false });
+      ballContainer.addEventListener('mousedown', handleStart);
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleEnd);
+    }
+
+    function handleStart(e) {
+      if (isBallThrowing) return;
+      isDragging = true;
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX; startY = point.clientY; startTime = Date.now();
+      document.getElementById('pumpkin-ball').style.transition = 'none';
+    }
+
+    function handleMove(e) {
+      if (!isDragging || isBallThrowing) return;
+      e.preventDefault();
+      const point = e.touches ? e.touches[0] : e;
+      const deltaX = point.clientX - startX, deltaY = point.clientY - startY;
+      if (deltaY < 10) {
+        document.getElementById('pumpkin-ball').style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.95)`;
+      }
+    }
+
+    function handleEnd(e) {
+      if (!isDragging || isBallThrowing) return;
+      isDragging = false;
+      const point = e.changedTouches ? e.changedTouches[0] : e;
+      const deltaY = point.clientY - startY, deltaX = point.clientX - startX;
+      if (deltaY < -60 && (Date.now() - startTime) < 500) {
+        executeThrow(deltaX, deltaY);
+      } else {
+        resetPumpkinBall();
+      }
+    }
+
+    function executeThrow(deltaX, deltaY) {
+      isBallThrowing = true;
+      const ball = document.getElementById('pumpkin-ball');
+      const monsterLayer = document.getElementById('ar-monster-layer');
+      ball.style.transition = 'transform 0.6s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.6s';
+      ball.style.transform = `translate(${deltaX * 2.5}px, ${-window.innerHeight * 0.55}px) scale(0.2) rotate(720deg)`;
+      ball.style.opacity = '0';
+
+      setTimeout(() => monsterLayer.classList.add('monster-captured'), 300);
+      setTimeout(() => completeCurrentStage(), 600);
+    }
+
+    function resetPumpkinBall() {
+      const ball = document.getElementById('pumpkin-ball');
+      if (!ball) return;
+      ball.style.transition = 'transform 0.3s, opacity 0.3s';
+      ball.style.transform = 'translate(0px, 0px) scale(1)';
+      ball.style.opacity = '1';
+      isBallThrowing = false;
+    }
+
+    /* ================= 2. 魔法調色遊戲 ================= */
+    let currentColor = { r: 0, g: 0, b: 0 };
+
+    function startColorGame() {
+      hideAllStages();
+      document.getElementById('color-stage').style.display = 'block';
+      document.getElementById('overlay-title').innerText = currentTargetMonster.name;
+      
+      document.getElementById('color-title-text').innerText = currentTargetMonster.title || `任務：調出【${currentTargetMonster.name}】`;
+      document.getElementById('color-hint-text').innerText = currentTargetMonster.hint || '點擊下方顏料，調出與目標相同的顏料！';
+      
+      const target = currentTargetMonster.target;
+      document.getElementById('target-color-circle').style.backgroundColor = `rgb(${target.r}, ${target.g}, ${target.b})`;
+      resetColor();
+    }
+
+    function resetColor() {
+      currentColor = { r: 0, g: 0, b: 0 };
+      updateColorUI();
+    }
+
+    function mixColor(colorName) {
+      if (colorName === 'red') currentColor.r = Math.min(255, currentColor.r + 128);
+      if (colorName === 'blue') currentColor.b = Math.min(255, currentColor.b + 128);
+      if (colorName === 'yellow') {
+        currentColor.r = Math.min(255, currentColor.r + 128);
+        currentColor.g = Math.min(255, currentColor.g + 128);
+      }
+      updateColorUI();
+
+      const t = currentTargetMonster.target;
+      if (Math.abs(currentColor.r - t.r) < 30 && Math.abs(currentColor.g - t.g) < 30 && Math.abs(currentColor.b - t.b) < 30) {
+        setTimeout(() => completeCurrentStage(), 200);
+      }
+    }
+
+    function updateColorUI() {
+      document.getElementById('current-color-circle').style.backgroundColor = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
+    }
+
+    /* ================= 3. 記憶卡翻翻樂 ================= */
+    let memoryCards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+
+    function startMemoryGame() {
+      hideAllStages();
+      document.getElementById('memory-stage').style.display = 'block';
+      document.getElementById('overlay-title').innerText = currentTargetMonster.name;
+
+      document.getElementById('memory-title-text').innerText = currentTargetMonster.title || '萬聖對對碰 🃏';
+      document.getElementById('memory-hint-text').innerText = currentTargetMonster.hint || '翻開兩張相同圖案的卡片進行配對！';
+
+      const baseIcons = currentTargetMonster.icons;
+      memoryCards = [...baseIcons, ...baseIcons].sort(() => Math.random() - 0.5);
+      flippedCards = [];
+      matchedPairs = 0;
+
+      const grid = document.getElementById('memory-grid');
+      grid.innerHTML = '';
+      memoryCards.forEach((icon, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.index = index;
+        card.dataset.icon = icon;
+        card.innerText = '❓';
+        card.onclick = () => flipCard(card);
+        grid.appendChild(card);
+      });
+    }
+
+    function flipCard(card) {
+      if (flippedCards.length >= 2 || card.classList.contains('flipped')) return;
+
+      card.classList.add('flipped');
+      card.innerText = card.dataset.icon;
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        if (flippedCards[0].dataset.icon === flippedCards[1].dataset.icon) {
+          matchedPairs++;
+          flippedCards = [];
+          if (matchedPairs === 3) {
+            setTimeout(() => completeCurrentStage(), 300);
+          }
+        } else {
+          setTimeout(() => {
+            flippedCards.forEach(c => {
+              c.classList.remove('flipped');
+              c.innerText = '❓';
+            });
+            flippedCards = [];
+          }, 800);
+        }
+      }
+    }
+
+    /* ================= 4. 萬聖節謎題 ================= */
+    function startQuizGame() {
+      hideAllStages();
+      document.getElementById('quiz-stage').style.display = 'block';
+      document.getElementById('overlay-title').innerText = currentTargetMonster.name;
+
+      document.getElementById('quiz-title-text').innerText = currentTargetMonster.title || '萬聖節智力考驗';
+      document.getElementById('quiz-question-text').innerText = currentTargetMonster.question;
+
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+
+      currentTargetMonster.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option-btn';
+        btn.innerText = `${idx + 1}. ${opt}`;
+        btn.onclick = () => checkQuizAnswer(idx);
+        container.appendChild(btn);
+      });
+    }
+
+    function checkQuizAnswer(selectedIdx) {
+      if (selectedIdx === currentTargetMonster.answer) {
+        completeCurrentStage();
+      } else {
+        alert("答錯囉！再試試看～👻");
+      }
+    }
+
+    /* ================= 系統工具函式 ================= */
+    function stopARCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+    }
+
+    function closeOverlay() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().catch(() => {});
+      }
+      stopARCamera();
+      hideAllStages();
+      document.getElementById('game-overlay').style.display = 'none';
+      
+      const fileInput = document.getElementById('qr-file-input');
+      if (fileInput) fileInput.value = '';
+    }
+
+    function openVerifyModal() { document.getElementById('verify-modal').style.display = 'flex'; }
+    function closeVerifyModal() {
+      document.getElementById('verify-modal').style.display = 'none';
+      document.getElementById('passcode').value = '';
+    }
+
+    function confirmRedeem() {
+      if (document.getElementById('passcode').value === STAFF_PASSCODE) {
+        alert("核銷成功！請領取您的萬聖節小禮物 🎁");
+        isRedeemed = true;
+        localStorage.setItem('halloween_redeemed', 'true');
+        closeVerifyModal();
+        updateProgress();
+      } else {
+        alert("核銷密碼錯誤！");
+      }
+    }
+
+    function confirmResetGame() {
+      if (confirm("確定要重置集點卡重新開始嗎？")) {
+        localStorage.removeItem('halloween_stamps');
+        localStorage.removeItem('halloween_redeemed');
+        collectedSet.clear();
+        isRedeemed = false;
+        renderStamps();
+        updateProgress();
+        alert("遊戲已重置！🎃");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
