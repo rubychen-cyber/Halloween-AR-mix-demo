@@ -511,7 +511,15 @@
       <button class="close-btn" onclick="closeOverlay()">✕</button>
     </div>
 
-    
+    <!-- 掃描與相機容器 -->
+    <div id="reader-container">
+      <div id="reader"></div>
+      
+      <label class="file-input-label">
+        📷 相機沒反應？點此拍照/選擇照片
+        <input type="file" id="qr-file-input" accept="image/*" capture="environment" style="display:none;" onchange="scanFromFile(this)">
+      </label>
+    </div>
 
     <!-- 1. AR 抓寶 -->
     <div class="game-stage" id="ar-stage">
